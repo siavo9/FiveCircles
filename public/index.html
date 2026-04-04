@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Five Circles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 28px;
+            padding: 24px 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .turn-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 18px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-top: 10px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Board ── */
+        .board {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .board-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 14px;
+            border: 2px solid transparent;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .board-row.completed {
+            background: #f7f8ff;
+        }
+
+        .row-num {
+            width: 18px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #bbb;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .guess-circles {
+            display: flex;
+            gap: 6px;
+        }
+
+        .guess-circle {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            border: 3px solid #e8e8e8;
+            flex-shrink: 0;
+            transition: transform 0.15s;
+        }
+
+        .guess-circle.filled {
+            border-color: transparent;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+        }
+
+        /* ── Feedback ── */
+        .feedback {
+            margin-left: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 110px;
+        }
+
+        .fb-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .fb-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .fb-green  { background: #30D158; }
+        .fb-yellow { background: #FFD60A; }
+        .fb-gray   { background: #D1D1D6; }
+
+        /* ── Current Guess Area ── */
+        .guess-area {
+            background: #f0f4ff;
+            border-radius: 18px;
+            padding: 16px;
+        }
+
+        .guess-area-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 12px;
+        }
+
+        .active-slots {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+
+        .active-slot {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 3px dashed #aab4f5;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+
+        .active-slot.filled {
+            border-style: solid;
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        }
+
+        .active-slot.filled:hover {
+            transform: scale(1.06);
+        }
+
+        .active-slot .placeholder {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #d0d5f5;
+            line-height: 1;
+        }
+
+        .active-slot .remove-x {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.75);
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .active-slot.filled:hover .remove-x {
+            opacity: 1;
+        }
+
+        /* ── Palette ── */
+        .palette {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .pal-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.15s, box-shadow 0.15s;
+            outline: none;
+            position: relative;
+        }
+
+        .pal-btn:hover {
+            transform: scale(1.12);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+        }
+
+        .pal-btn:active {
+            transform: scale(0.94);
+        }
+
+        .pal-label {
+            text-align: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #888;
+            margin-top: 3px;
+            letter-spacing: 0.03em;
+        }
+
+        .pal-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── Buttons ── */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.15s, background 0.15s;
+        }
+
+        .btn:active { transform: scale(0.97); }
+
+        .btn-clear {
+            background: #ebebeb;
+            color: #666;
+        }
+        .btn-clear:hover { background: #ddd; }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+        }
+        .btn-submit:hover:not(:disabled) {
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            transform: translateY(-1px);
+        }
+        .btn-submit:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ── Legend ── */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #888;
+        }
+
+        .legend-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+        }
+
+        /* ── Game Over Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 20px;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 28px;
+            padding: 32px 28px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.65); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+
+        .modal-emoji { font-size: 3.2rem; margin-bottom: 10px; }
+
+        .modal-title {
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .win-title {
+            background: linear-gradient(135deg, #30D158, #007AFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .lose-title {
+            background: linear-gradient(135deg, #FF3B30, #FF9F0A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-msg {
+            font-size: 0.9rem;
+            color: #777;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .secret-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+        }
+
+        .secret-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .secret-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-play-again {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 36px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+            transition: transform 0.1s, box-shadow 0.15s;
+        }
+
+        .btn-play-again:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(102, 126, 234, 0.5);
+        }
+
+        /* ── Row pop animation ── */
+        @keyframes rowPop {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .row-animate {
+            animation: rowPop 0.35s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="title">🔵 Five Circles</div>
+        <div class="subtitle">Crack the secret color code!</div>
+        <div class="turn-badge" id="turnBadge">Guess 1 of 10</div>
+    </div>
+
+    <!-- Board -->
+    <div class="board" id="board"></div>
+
+    <!-- Current Guess Area -->
+    <div class="guess-area" id="guessArea">
+        <div class="guess-area-label">Your Guess</div>
+        <div class="active-slots" id="activeSlots"></div>
+        <div class="palette" id="palette"></div>
+        <div class="btn-row">
+            <button class="btn btn-clear" onclick="clearGuess()">↺ Clear</button>
+            <button class="btn btn-submit" id="submitBtn" onclick="submitGuess()" disabled>Submit Guess ➜</button>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot fb-green"></div> Right color, right spot
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot fb-yellow"></div> Right color, wrong spot
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot fb-gray"></div> Not in code
+        </div>
+    </div>
+
+</div>
+
+<!-- Game Over Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card" id="modalCard">
+        <div class="modal-emoji"  id="modalEmoji"></div>
+        <div class="modal-title"  id="modalTitle"></div>
+        <div class="modal-msg"    id="modalMsg"></div>
+        <div class="secret-label">The Secret Code Was</div>
+        <div class="secret-row"   id="secretRow"></div>
+        <button class="btn-play-again" onclick="newGame()">Play Again 🎮</button>
+    </div>
+</div>
+
+<script>
+    // ─────────────────────────────────────────
+    //  Constants
+    // ─────────────────────────────────────────
+    const COLORS = [
+        { name: 'Red',    hex: '#FF3B30' },
+        { name: 'Blue',   hex: '#007AFF' },
+        { name: 'Yellow', hex: '#FFD60A' },
+        { name: 'Green',  hex: '#30D158' },
+        { name: 'Orange', hex: '#FF9F0A' },
+        { name: 'Purple', hex: '#BF5AF2' }
+    ];
+
+    const SLOTS      = 4;
+    const MAX_TURNS  = 10;
+
+    // ─────────────────────────────────────────
+    //  State
+    // ─────────────────────────────────────────
+    let secretCode   = [];
+    let currentGuess = [];
+    let history      = [];   // [{ guess: [...], result: {...} }]
+    let gameOver     = false;
+
+    // ─────────────────────────────────────────
+    //  Game Logic
+    // ─────────────────────────────────────────
+    function generateCode() {
+        return Array.from({ length: SLOTS }, () =>
+            COLORS[Math.floor(Math.random() * COLORS.length)]
+        );
+    }
+
+    function evaluate(guess, secret) {
+        // Work on copies so we can null out matched entries
+        const s = [...secret];
+        const g = [...guess];
+
+        let correctPos = 0;
+        let wrongPos   = 0;
+
+        // Pass 1 – exact position matches
+        for (let i = 0; i < SLOTS; i++) {
+            if (g[i].name === s[i].name) {
+                correctPos++;
+                s[i] = null;
+                g[i] = null;
+            }
+        }
+
+        // Pass 2 – right color, wrong position
+        for (let i = 0; i < SLOTS; i++) {
+            if (g[i] !== null) {
+                const idx = s.findIndex(c => c && c.name === g[i].name);
+                if (idx !== -1) {
+                    wrongPos++;
+                    s[idx] = null;
+                }
+            }
+        }
+
+        const notInCode = SLOTS - correctPos - wrongPos;
+        return { correctPos, wrongPos, notInCode };
+    }
+
+    // ─────────────────────────────────────────
+    //  Rendering
+    // ─────────────────────────────────────────
+    function renderBoard() {
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+
+        for (let i = 0; i < MAX_TURNS; i++) {
+            const done = i < history.length;
+            const row  = document.createElement('div');
+            row.className = 'board-row' + (done ? ' completed' : '');
+            row.id = `row-${i}`;
+
+            // Row number
+            const num = document.createElement('div');
+            num.className = 'row-num';
+            num.textContent = i + 1;
+            row.appendChild(num);
+
+            // Guess circles
+            const circles = document.createElement('div');
+            circles.className = 'guess-circles';
+            for (let j = 0; j < SLOTS; j++) {
+                const c = document.createElement('div');
+                c.className = 'guess-circle';
+                if (done) {
+                    c.style.background = history[i].guess[j].hex;
+                    c.classList.add('filled');
+                }
+                circles.appendChild(c);
+            }
+            row.appendChild(circles);
+
+            // Feedback
+            const fb = document.createElement('div');
+            fb.className = 'feedback';
+            if (done) {
+                const { correctPos, wrongPos, notInCode } = history[i].result;
+                const items = [
+                    { count: correctPos, cls: 'fb-green',  label: 'right spot'  },
+                    { count: wrongPos,   cls: 'fb-yellow', label: 'wrong spot'  },
+                    { count: notInCode,  cls: 'fb-gray',   label: 'not in code' }
+                ];
+                items.forEach(({ count, cls, label }) => {
+                    const line = document.createElement('div');
+                    line.className = 'fb-row';
+                    line.innerHTML = `<div class="fb-dot ${cls}"></div>${count} ${label}`;
+                    fb.appendChild(line);
+                });
+            }
+            row.appendChild(fb);
+
+            board.appendChild(row);
+        }
+    }
+
+    function renderSlots() {
+        const container = document.getElementById('activeSlots');
+        container.innerHTML = '';
+
+        for (let i = 0; i < SLOTS; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'active-slot';
+
+            if (currentGuess[i]) {
+                slot.classList.add('filled');
+                slot.style.background = currentGuess[i].hex;
+
+                const x = document.createElement('div');
+                x.className = 'remove-x';
+                x.textContent = '×';
+                slot.appendChild(x);
+
+                const idx = i;
+                slot.onclick = () => removeSlot(idx);
+            } else {
+                const ph = document.createElement('div');
+                ph.className = 'placeholder';
+                ph.textContent = '?';
+                slot.appendChild(ph);
+            }
+
+            container.appendChild(slot);
+        }
+
+        document.getElementById('submitBtn').disabled = (currentGuess.length < SLOTS);
+    }
+
+    function renderPalette() {
+        const container = document.getElementById('palette');
+        container.innerHTML = '';
+
+        COLORS.forEach(color => {
+            const item = document.createElement('div');
+            item.className = 'pal-item';
+
+            const btn = document.createElement('button');
+            btn.className = 'pal-btn';
+            btn.style.background = color.hex;
+            btn.title = color.name;
+            btn.onclick = () => pickColor(color);
+
+            const lbl = document.createElement('div');
+            lbl.className = 'pal-label';
+            lbl.textContent = color.name;
+
+            item.appendChild(btn);
+            item.appendChild(lbl);
+            container.appendChild(item);
+        });
+    }
+
+    function updateTurnBadge() {
+        const next = Math.min(history.length + 1, MAX_TURNS);
+        document.getElementById('turnBadge').textContent =
+            gameOver ? `Done!` : `Guess ${next} of ${MAX_TURNS}`;
+    }
+
+    // ─────────────────────────────────────────
+    //  Interactions
+    // ─────────────────────────────────────────
+    function pickColor(color) {
+        if (gameOver || currentGuess.length >= SLOTS) return;
+        currentGuess.push(color);
+        renderSlots();
+    }
+
+    function removeSlot(i) {
+        if (gameOver) return;
+        currentGuess.splice(i, 1);
+        renderSlots();
+    }
+
+    function clearGuess() {
+        if (gameOver) return;
+        currentGuess = [];
+        renderSlots();
+    }
+
+    function submitGuess() {
+        if (gameOver || currentGuess.length < SLOTS) return;
+
+        const result = evaluate(currentGuess, secretCode);
+        history.push({ guess: [...currentGuess], result });
+        currentGuess = [];
+
+        renderBoard();
+        renderSlots();
+        updateTurnBadge();
+
+        // Animate the new row
+        const newRow = document.getElementById(`row-${history.length - 1}`);
+        if (newRow) {
+            newRow.classList.add('row-animate');
+            newRow.addEventListener('animationend', () => newRow.classList.remove('row-animate'), { once: true });
+        }
+
+        // Scroll the board row into view smoothly
+        if (newRow) newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // Check end conditions
+        if (result.correctPos === SLOTS) {
+            endGame(true);
+        } else if (history.length >= MAX_TURNS) {
+            endGame(false);
+        }
+    }
+
+    // ─────────────────────────────────────────
+    //  End Game
+    // ─────────────────────────────────────────
+    function endGame(won) {
+        gameOver = true;
+        updateTurnBadge();
+
+        // Dim the guess area
+        const ga = document.getElementById('guessArea');
+        ga.style.opacity = '0.4';
+        ga.style.pointerEvents = 'none';
+
+        // Populate modal
+        document.getElementById('modalEmoji').textContent  = won ? '🎉' : '😔';
+        document.getElementById('modalTitle').textContent  = won ? 'You Cracked It!' : 'Game Over!';
+        document.getElementById('modalTitle').className    = 'modal-title ' + (won ? 'win-title' : 'lose-title');
+
+        if (won) {
+            const tries = history.length;
+            document.getElementById('modalMsg').textContent =
+                `Incredible! You guessed the code in ${tries} ${tries === 1 ? 'try' : 'tries'}! 🏆`;
+        } else {
+            document.getElementById('modalMsg').textContent =
+                `You used all 10 guesses. Better luck next time! Here's what the code was:`;
+        }
+
+        // Show secret code
+        const row = document.getElementById('secretRow');
+        row.innerHTML = '';
+        secretCode.forEach(color => {
+            const c = document.createElement('div');
+            c.className = 'secret-circle';
+            c.style.background = color.hex;
+            row.appendChild(c);
+        });
+
+        // Show modal after a short delay so the last row animation plays
+        setTimeout(() => {
+            document.getElementById('modalOverlay').classList.add('visible');
+        }, 500);
+    }
+
+    // ─────────────────────────────────────────
+    //  New Game
+    // ─────────────────────────────────────────
+    function newGame() {
+        secretCode   = generateCode();
+        currentGuess = [];
+        history      = [];
+        gameOver     = false;
+
+        document.getElementById('modalOverlay').classList.remove('visible');
+        const ga = document.getElementById('guessArea');
+        ga.style.opacity = '1';
+        ga.style.pointerEvents = 'auto';
+
+        renderBoard();
+        renderSlots();
+        renderPalette();
+        updateTurnBadge();
+    }
+
+    // ─────────────────────────────────────────
+    //  Bootstrap
+    // ─────────────────────────────────────────
+    newGame();
+</script>
+</body>
+</html>
