@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Five Circles</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Four Circles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
  
@@ -35,14 +35,23 @@
         }
  
         .title {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.5px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.8rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            line-height: 1.1;
         }
+ 
+        .title span {
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+ 
+        .title span:hover {
+            transform: scale(1.25) rotate(-5deg);
+        }
+ 
+        .title .t-space { width: 0.35em; display: inline-block; }
  
         .subtitle {
             font-size: 0.85rem;
@@ -672,8 +681,10 @@
  
     <!-- Header -->
     <div class="header">
-        <div class="title">🔵 Five Circles</div>
-        <div class="subtitle">Crack the secret color code!</div>
+        <div class="title">
+            <span style="color:#FF3B30; text-shadow: 0 3px 0 rgba(255,59,48,0.3)">F</span><span style="color:#007AFF; text-shadow: 0 3px 0 rgba(0,122,255,0.3)">o</span><span style="color:#FFD60A; text-shadow: 0 3px 0 rgba(255,214,10,0.4)">u</span><span style="color:#30D158; text-shadow: 0 3px 0 rgba(48,209,88,0.3)">r</span><span class="t-space"></span><span style="color:#FF9F0A; text-shadow: 0 3px 0 rgba(255,159,10,0.3)">C</span><span style="color:#BF5AF2; text-shadow: 0 3px 0 rgba(191,90,242,0.3)">i</span><span style="color:#FF3B30; text-shadow: 0 3px 0 rgba(255,59,48,0.3)">r</span><span style="color:#007AFF; text-shadow: 0 3px 0 rgba(0,122,255,0.3)">c</span><span style="color:#FFD60A; text-shadow: 0 3px 0 rgba(255,214,10,0.4)">l</span><span style="color:#30D158; text-shadow: 0 3px 0 rgba(48,209,88,0.3)">e</span><span style="color:#FF9F0A; text-shadow: 0 3px 0 rgba(255,159,10,0.3)">s</span>
+        </div>
+        <div class="subtitle">A colorful code-cracking game!</div>
         <div class="header-controls">
             <div class="turn-badge" id="turnBadge">Guess 1 of 10</div>
             <button class="btn-rules" onclick="openRules()">❓ How to Play</button>
