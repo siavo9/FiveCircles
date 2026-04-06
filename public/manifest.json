@@ -1,0 +1,25 @@
+{
+  "name": "Four Circles — Color Puzzle Brain Game",
+  "short_name": "Four Circles",
+  "description": "Crack the secret 4-color code in 10 tries! A free, fun brain game for memory and focus.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment", "education"]
+}

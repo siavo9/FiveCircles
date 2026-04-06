@@ -1,0 +1,13 @@
+{
+  "name": "five-circles",
+  "version": "1.0.0",
+  "description": "Four Circles - A color code puzzle brain game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.22.1"
+  }
+}
