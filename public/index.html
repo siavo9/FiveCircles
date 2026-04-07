@@ -1590,30 +1590,39 @@
         }
     }
 
+    // ── Client-side seed from date string (works without a backend) ──
+    function localSeedFromDate(dateStr) {
+        let h = 0;
+        for (let i = 0; i < dateStr.length; i++) {
+            h = Math.imul(31, h) + dateStr.charCodeAt(i) | 0;
+        }
+        return Math.abs(h);
+    }
+
     function fetchDailySeed() {
+        const today = new Date().toISOString().split('T')[0];
+
+        const applyDailySeed = (seed) => {
+            dailySeed = seed;
+            const alreadyPlayed = localStorage.getItem(`fc_daily_${today}`);
+            if (alreadyPlayed) {
+                document.getElementById('alreadyPlayedToday').style.display = 'block';
+                document.getElementById('guessArea').style.display = 'none';
+                document.getElementById('board').style.display = 'none';
+                document.getElementById('legend').style.display = 'none';
+            } else {
+                document.getElementById('alreadyPlayedToday').style.display = 'none';
+                document.getElementById('guessArea').style.display = 'block';
+                document.getElementById('board').style.display = 'flex';
+                document.getElementById('legend').style.display = 'flex';
+                newGame();
+            }
+        };
+
         fetch('/api/daily-seed')
             .then(r => r.json())
-            .then(data => {
-                dailySeed = data.seed;
-                const today = new Date().toISOString().split('T')[0];
-                const alreadyPlayed = localStorage.getItem(`fc_daily_${today}`);
-
-                if (alreadyPlayed) {
-                    document.getElementById('alreadyPlayedToday').style.display = 'block';
-                    document.getElementById('guessArea').style.display = 'none';
-                    document.getElementById('board').style.display = 'none';
-                    document.getElementById('legend').style.display = 'none';
-                } else {
-                    document.getElementById('alreadyPlayedToday').style.display = 'none';
-                    document.getElementById('guessArea').style.display = 'block';
-                    document.getElementById('board').style.display = 'flex';
-                    document.getElementById('legend').style.display = 'flex';
-                    newGame();
-                }
-            })
-            .catch(() => {
-                alert('Failed to fetch daily seed. Please try again.');
-            });
+            .then(data => applyDailySeed(data.seed))
+            .catch(() => applyDailySeed(localSeedFromDate(today)));
     }
 
     // ─────────────────────────────────────────
