@@ -1001,6 +1001,52 @@
             box-shadow: 0 4px 12px rgba(48,209,88,0.35);
         }
 
+        /* ── Stats Section ── */
+        .stats-section {
+            margin: 18px 0 8px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
+            border-radius: 16px;
+            border: 1px solid rgba(102,126,234,0.12);
+        }
+        .stats-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 12px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .stat-box {
+            background: white;
+            border-radius: 12px;
+            padding: 10px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #333;
+            line-height: 1.2;
+        }
+        .stat-value.streak { color: #FF9F0A; }
+        .stat-value.wins { color: #30D158; }
+        .stat-value.losses { color: #FF3B30; }
+        .stat-value.time { color: #007AFF; }
+        .stat-desc {
+            font-size: 0.65rem;
+            color: #999;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+
         /* ── Copied Tooltip ── */
         .copied-tooltip {
             position: fixed;
@@ -1258,6 +1304,33 @@
 
         <!-- Share button (daily challenge only) -->
         <button id="shareBtn" class="btn-share" style="display:none;" onclick="shareResults()">📋 Share Results</button>
+
+        <!-- Daily Stats (shown only in daily mode) -->
+        <div id="statsSection" class="stats-section" style="display:none;">
+            <div class="stats-label">📊 Your Daily Stats</div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value streak" id="statStreak">0</div>
+                    <div class="stat-desc">Win Streak 🔥</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value time" id="statStreakTime">--:--</div>
+                    <div class="stat-desc">Avg Streak Time</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value wins" id="statWins">0</div>
+                    <div class="stat-desc">Total Wins</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value losses" id="statLosses">0</div>
+                    <div class="stat-desc">Total Losses</div>
+                </div>
+                <div class="stat-box" style="grid-column: 1 / -1;">
+                    <div class="stat-value time" id="statAvgTime">--:--</div>
+                    <div class="stat-desc">Avg Win Time (All Time)</div>
+                </div>
+            </div>
+        </div>
 
         <button class="btn-play-again" onclick="newGame()">Play Again 🎮</button>
     </div>
@@ -1547,6 +1620,7 @@
         });
 
         document.getElementById('shareBtn').style.display = won ? 'inline-block' : 'none';
+        renderStats();
 
         // Hide play again — daily can only be played once per day
         document.querySelector('.btn-play-again').style.display = 'none';
@@ -1921,6 +1995,104 @@
     }
 
     // ─────────────────────────────────────────
+    //  Stats & Streaks
+    // ─────────────────────────────────────────
+    // Migrate old per-day localStorage entries into the stats system
+    (function migrateLegacyDailyData() {
+        if (localStorage.getItem('fc_daily_stats')) return; // already migrated
+        const stats = { games: [] };
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('fc_daily_') && key !== 'fc_daily_stats') {
+                const date = key.replace('fc_daily_', '');
+                try {
+                    const saved = JSON.parse(localStorage.getItem(key));
+                    if (saved && typeof saved.won === 'boolean') {
+                        stats.games.push({
+                            date: date,
+                            won: saved.won,
+                            time: saved.time || 0,
+                            guesses: saved.guesses || 0
+                        });
+                    }
+                } catch {}
+            }
+        }
+        if (stats.games.length > 0) {
+            stats.games.sort((a, b) => a.date.localeCompare(b.date));
+            localStorage.setItem('fc_daily_stats', JSON.stringify(stats));
+        }
+    })();
+
+    function getDailyStats() {
+        try {
+            const raw = localStorage.getItem('fc_daily_stats');
+            return raw ? JSON.parse(raw) : { games: [] };
+        } catch { return { games: [] }; }
+    }
+
+    function saveDailyStats(stats) {
+        localStorage.setItem('fc_daily_stats', JSON.stringify(stats));
+    }
+
+    function recordDailyResult(date, won, time, guesses) {
+        const stats = getDailyStats();
+        // Don't double-record the same date
+        if (stats.games.some(g => g.date === date)) return stats;
+        stats.games.push({ date, won, time, guesses });
+        // Keep sorted by date
+        stats.games.sort((a, b) => a.date.localeCompare(b.date));
+        saveDailyStats(stats);
+        return stats;
+    }
+
+    function computeStats(stats) {
+        const games = stats.games || [];
+        const wins = games.filter(g => g.won);
+        const losses = games.filter(g => !g.won);
+
+        // Current streak: count consecutive wins backwards from latest game
+        let streak = 0;
+        for (let i = games.length - 1; i >= 0; i--) {
+            if (games[i].won) streak++;
+            else break;
+        }
+
+        // Average time for current streak
+        let streakAvgTime = 0;
+        if (streak > 0) {
+            const streakGames = games.slice(-streak);
+            streakAvgTime = streakGames.reduce((s, g) => s + g.time, 0) / streak;
+        }
+
+        // Average time for all wins
+        let allTimeAvgTime = 0;
+        if (wins.length > 0) {
+            allTimeAvgTime = wins.reduce((s, g) => s + g.time, 0) / wins.length;
+        }
+
+        return {
+            streak,
+            streakAvgTime: Math.round(streakAvgTime),
+            totalWins: wins.length,
+            totalLosses: losses.length,
+            allTimeAvgTime: Math.round(allTimeAvgTime)
+        };
+    }
+
+    function renderStats() {
+        const stats = getDailyStats();
+        const c = computeStats(stats);
+
+        document.getElementById('statsSection').style.display = 'block';
+        document.getElementById('statStreak').textContent = c.streak;
+        document.getElementById('statStreakTime').textContent = c.streak > 0 ? formatTime(c.streakAvgTime) : '--:--';
+        document.getElementById('statWins').textContent = c.totalWins;
+        document.getElementById('statLosses').textContent = c.totalLosses;
+        document.getElementById('statAvgTime').textContent = c.totalWins > 0 ? formatTime(c.allTimeAvgTime) : '--:--';
+    }
+
+    // ─────────────────────────────────────────
     //  End Game
     // ─────────────────────────────────────────
     function endGame(won) {
@@ -1966,9 +2138,12 @@
                 time: elapsedTime,
                 won: won
             }));
+            recordDailyResult(today, won, elapsedTime, history.length);
             document.getElementById('shareBtn').style.display = won ? 'inline-block' : 'none';
+            renderStats();
         } else {
             document.getElementById('shareBtn').style.display = 'none';
+            document.getElementById('statsSection').style.display = 'none';
         }
 
         document.querySelector('.btn-play-again').style.display = 'block';
