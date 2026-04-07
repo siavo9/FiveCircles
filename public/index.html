@@ -979,75 +979,6 @@
             box-shadow: 0 8px 22px rgba(102,126,234,0.5);
         }
 
-        /* ── Leaderboard ── */
-        .leaderboard-section {
-            margin-top: 24px;
-            text-align: left;
-        }
-
-        .leaderboard-title {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: #667eea;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-            margin-bottom: 16px;
-        }
-
-        .leaderboard-table th {
-            background: #f7f8ff;
-            padding: 8px;
-            text-align: left;
-            font-weight: 700;
-            color: #667eea;
-            border-bottom: 2px solid #e0e8ff;
-        }
-
-        .leaderboard-table td {
-            padding: 8px;
-            border-bottom: 1px solid #f0f0f0;
-            color: #555;
-        }
-
-        .leaderboard-table tr:hover {
-            background: #fafbff;
-        }
-
-        /* ── Name Input ── */
-        .name-input-section {
-            margin-top: 16px;
-            margin-bottom: 16px;
-        }
-
-        .name-input-label {
-            font-size: 0.8rem;
-            color: #777;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .name-input-field {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e0e8ff;
-            border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.9rem;
-            transition: border-color 0.2s;
-        }
-
-        .name-input-field:focus {
-            outline: none;
-            border-color: #667eea;
-        }
 
         /* ── Share Button ── */
         .btn-share {
@@ -1325,30 +1256,8 @@
         <div class="secret-label">The Secret Code Was</div>
         <div class="secret-row"  id="secretRow"></div>
 
-        <!-- Name input (daily challenge only, if qualified) -->
-        <div id="nameInputSection" style="display:none;" class="name-input-section">
-            <label class="name-input-label">Enter your name for the leaderboard:</label>
-            <input type="text" id="playerName" class="name-input-field" placeholder="Your name" maxlength="20">
-        </div>
-
         <!-- Share button (daily challenge only) -->
         <button id="shareBtn" class="btn-share" style="display:none;" onclick="shareResults()">📋 Share Results</button>
-
-        <!-- Leaderboard (daily challenge only) -->
-        <div id="leaderboardSection" style="display:none;" class="leaderboard-section">
-            <div class="leaderboard-title">Today's Leaderboard</div>
-            <table class="leaderboard-table" id="leaderboardTable">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Name</th>
-                        <th>Time</th>
-                        <th>Guesses</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboardBody"></tbody>
-            </table>
-        </div>
 
         <button class="btn-play-again" onclick="newGame()">Play Again 🎮</button>
     </div>
@@ -1599,17 +1508,58 @@
         return Math.abs(h);
     }
 
+    function showAlreadyPlayedModal(saved) {
+        // Regenerate today's secret code from the seed so we can display it
+        secretCode = generateCode();
+
+        const won = saved.won;
+        const timeStr = formatTime(saved.time);
+        const guessCount = saved.guesses;
+
+        document.getElementById('modalEmoji').textContent = won ? '🎉' : '😔';
+        document.getElementById('modalTitle').textContent = won ? 'You Cracked It!' : 'Game Over!';
+        document.getElementById('modalTitle').className = 'modal-title ' + (won ? 'win-title' : 'lose-title');
+        document.getElementById('modalMsg').textContent = won
+            ? `You solved today's puzzle in ${guessCount} ${guessCount === 1 ? 'try' : 'tries'} in ${timeStr}! 🏆`
+            : `You used all 10 guesses on today's puzzle. Come back tomorrow!`;
+
+        const secretRow = document.getElementById('secretRow');
+        secretRow.innerHTML = '';
+        secretCode.forEach(color => {
+            const c = document.createElement('div');
+            c.className = 'secret-circle';
+            c.style.background = color.hex;
+            if (colorblindMode) {
+                const letter = document.createElement('span');
+                letter.className = 'circle-letter';
+                letter.textContent = color.letter;
+                c.appendChild(letter);
+            } else {
+                c.textContent = color.face;
+            }
+            secretRow.appendChild(c);
+        });
+
+        document.getElementById('shareBtn').style.display = won ? 'inline-block' : 'none';
+
+        // Hide play again — daily can only be played once per day
+        document.querySelector('.btn-play-again').style.display = 'none';
+
+        document.getElementById('modalOverlay').classList.add('visible');
+    }
+
     function fetchDailySeed() {
         const today = new Date().toISOString().split('T')[0];
 
         const applyDailySeed = (seed) => {
             dailySeed = seed;
-            const alreadyPlayed = localStorage.getItem(`fc_daily_${today}`);
-            if (alreadyPlayed) {
-                document.getElementById('alreadyPlayedToday').style.display = 'block';
+            const stored = localStorage.getItem(`fc_daily_${today}`);
+            if (stored) {
+                document.getElementById('alreadyPlayedToday').style.display = 'none';
                 document.getElementById('guessArea').style.display = 'none';
                 document.getElementById('board').style.display = 'none';
                 document.getElementById('legend').style.display = 'none';
+                showAlreadyPlayedModal(JSON.parse(stored));
             } else {
                 document.getElementById('alreadyPlayedToday').style.display = 'none';
                 document.getElementById('guessArea').style.display = 'block';
@@ -1989,25 +1939,19 @@
             secretRow.appendChild(c);
         });
 
-        if (dailyMode && won) {
+        if (dailyMode) {
             const today = new Date().toISOString().split('T')[0];
             localStorage.setItem(`fc_daily_${today}`, JSON.stringify({
                 guesses: history.length,
-                time: elapsedTime
+                time: elapsedTime,
+                won: won
             }));
-
-            document.getElementById('shareBtn').style.display = 'inline-block';
-            document.getElementById('leaderboardSection').style.display = 'block';
-
-            fetchLeaderboard(today, elapsedTime);
-
-            const nameInputSection = document.getElementById('nameInputSection');
-            nameInputSection.style.display = 'block';
+            document.getElementById('shareBtn').style.display = won ? 'inline-block' : 'none';
         } else {
             document.getElementById('shareBtn').style.display = 'none';
-            document.getElementById('leaderboardSection').style.display = 'none';
-            document.getElementById('nameInputSection').style.display = 'none';
         }
+
+        document.querySelector('.btn-play-again').style.display = 'block';
 
         if (won && dailyMode) playWinSound();
         if (!won) playLoseSound();
@@ -2017,49 +1961,24 @@
         }, 500);
     }
 
-    // ─────────────────────────────────────────
-    //  Leaderboard
-    // ─────────────────────────────────────────
-    function fetchLeaderboard(date, playerTime) {
-        fetch(`/api/leaderboard/${date}`)
-            .then(r => r.json())
-            .then(data => {
-                const tbody = document.getElementById('leaderboardBody');
-                tbody.innerHTML = '';
-                const entries = data.entries || [];
-                entries.slice(0, 10).forEach((entry, idx) => {
-                    const tr = document.createElement('tr');
-                    const cells = [
-                        document.createElement('td'),
-                        document.createElement('td'),
-                        document.createElement('td'),
-                        document.createElement('td')
-                    ];
-                    cells[0].textContent = idx + 1;
-                    cells[1].textContent = entry.name;
-                    cells[2].textContent = formatTime(entry.time);
-                    cells[3].textContent = entry.guesses;
-                    cells.forEach(c => tr.appendChild(c));
-                    tbody.appendChild(tr);
-                });
-            })
-            .catch(() => {});
-    }
 
     function shareResults() {
         const today = new Date().toISOString().split('T')[0];
         const emoji = '🔴🔵🟡🟢';
-        const elapsedTime = getElapsedTime();
-        const timeStr = formatTime(elapsedTime);
 
-        let shareText = `${emoji} Four Circles Daily #${today}\nSolved in ${history.length}/${MAX_TURNS} guesses | ⏱️ ${timeStr}\n`;
+        // Use stored data if available (e.g. replaying from localStorage)
+        const stored = localStorage.getItem(`fc_daily_${today}`);
+        let guessCount, timeStr;
+        if (stored) {
+            const saved = JSON.parse(stored);
+            guessCount = saved.guesses;
+            timeStr = formatTime(saved.time);
+        } else {
+            guessCount = history.length;
+            timeStr = formatTime(getElapsedTime());
+        }
 
-        history.forEach(entry => {
-            const row = entry.guess.map(color => '🟢').join('');
-            shareText += row + '\n';
-        });
-
-        shareText += 'fourcircles.app';
+        let shareText = `${emoji} Four Circles Daily #${today}\nSolved in ${guessCount}/${MAX_TURNS} guesses | ⏱️ ${timeStr}\nfourcircles.app`;
 
         navigator.clipboard.writeText(shareText).then(() => {
             showCopiedTooltip();
