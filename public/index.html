@@ -1944,9 +1944,9 @@
         }
 
         if (result.correctPos === SLOTS) {
-            setTimeout(() => endGame(true), circles.length * 200 + 800);
+            setTimeout(() => endGame(true), SLOTS * 200 + 800);
         } else if (history.length >= MAX_TURNS) {
-            setTimeout(() => endGame(false), circles.length * 200 + 800);
+            setTimeout(() => endGame(false), SLOTS * 200 + 800);
         }
     }
 
