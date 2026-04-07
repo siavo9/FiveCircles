@@ -1495,6 +1495,12 @@
             fetchDailySeed();
         } else {
             document.getElementById('alreadyPlayedToday').style.display = 'none';
+            document.getElementById('modalOverlay').classList.remove('visible');
+            document.getElementById('guessArea').style.display = 'block';
+            document.getElementById('guessArea').style.opacity = '1';
+            document.getElementById('guessArea').style.pointerEvents = 'auto';
+            document.getElementById('board').style.display = 'flex';
+            document.getElementById('legend').style.display = 'flex';
             newGame();
         }
     }
