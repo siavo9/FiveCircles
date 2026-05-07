@@ -1834,8 +1834,12 @@
 
         // Hide play again — daily can only be played once per day
         document.querySelector('.btn-play-again').style.display = 'none';
+        showPlayMoreButton();
 
-        // Show a button to switch to Free Play
+        document.getElementById('modalOverlay').classList.add('visible');
+    }
+
+    function showPlayMoreButton() {
         let freePlayBtn = document.getElementById('switchToFreePlayBtn');
         if (!freePlayBtn) {
             freePlayBtn = document.createElement('button');
@@ -1843,13 +1847,11 @@
             freePlayBtn.className = 'btn-play-again';
             freePlayBtn.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
             freePlayBtn.style.marginTop = '10px';
-            freePlayBtn.textContent = '🎮 Play More with Free Play';
+            freePlayBtn.textContent = '🎮 Play More';
             freePlayBtn.onclick = () => setGameMode('freeplay');
             document.querySelector('.btn-play-again').insertAdjacentElement('afterend', freePlayBtn);
         }
         freePlayBtn.style.display = 'block';
-
-        document.getElementById('modalOverlay').classList.add('visible');
     }
 
     function fetchDailySeed() {
@@ -2354,14 +2356,18 @@
 
             // Try to claim today's first-solver slot if the player won.
             if (won) attemptFirstSolverClaim(elapsedTime, history.length);
+
+            // Daily can only be played once per day — hide Play Again, show Play More (switches to Free Play)
+            document.querySelector('.btn-play-again').style.display = 'none';
+            showPlayMoreButton();
         } else {
             document.getElementById('shareBtn').style.display = 'none';
             document.getElementById('statsSection').style.display = 'none';
-        }
 
-        document.querySelector('.btn-play-again').style.display = 'block';
-        const fpBtn = document.getElementById('switchToFreePlayBtn');
-        if (fpBtn) fpBtn.style.display = 'none';
+            document.querySelector('.btn-play-again').style.display = 'block';
+            const fpBtn = document.getElementById('switchToFreePlayBtn');
+            if (fpBtn) fpBtn.style.display = 'none';
+        }
 
         if (won && dailyMode) playWinSound();
         if (!won) playLoseSound();
