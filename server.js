@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const compression = require('compression');
 const crypto = require('crypto');
 
@@ -13,206 +14,249 @@ app.use(express.json());
 
 // ── Security & SEO headers ──
 app.use((req, res, next) => {
-  // Security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-
-  // HSTS — tells browsers to always use HTTPS (SEO best practice)
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-
   next();
 });
 
-// ── In-memory leaderboard storage: Map<dateString, Array<entry>> ──
-const leaderboards = new Map();
+// ─────────────────────────────────────────────────────────────────────────
+//  First-Solver Leaderboard (Eastern Time)
+//  In-memory store keyed by EST date string. The puzzle day rolls over at
+//  midnight in America/New_York. A best-effort JSON file backup keeps data
+//  across restarts on environments with a writable filesystem.
+// ─────────────────────────────────────────────────────────────────────────
 
-// ── Helper: Generate deterministic seed from date string ──
+const DATA_DIR = path.join(__dirname, 'data');
+const DATA_FILE = path.join(DATA_DIR, 'first-solvers.json');
+
+/** @type {Map<string, {name: string|null, time: number, guesses: number, solvedAt: string, claimToken: string}>} */
+const firstSolvers = new Map();
+
+function loadFromDisk() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const raw = fs.readFileSync(DATA_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      for (const [date, entry] of Object.entries(parsed)) {
+        firstSolvers.set(date, entry);
+      }
+    }
+  } catch (err) {
+    console.warn('Could not load first-solvers from disk:', err.message);
+  }
+}
+
+function saveToDisk() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    const obj = Object.fromEntries(firstSolvers.entries());
+    fs.writeFileSync(DATA_FILE, JSON.stringify(obj, null, 2));
+  } catch (err) {
+    // Filesystem may be read-only (e.g. some serverless platforms). Skip silently.
+  }
+}
+
+loadFromDisk();
+
+// ── Get current date in America/New_York as YYYY-MM-DD ──
+function getEstDateString(d = new Date()) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  });
+  const parts = fmt.formatToParts(d);
+  const get = (t) => parts.find(p => p.type === t).value;
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+// ── Get current time in America/New_York as HH:MM:SS (24h) ──
+function getEstTimeString(d = new Date()) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  });
+  const parts = fmt.formatToParts(d);
+  const get = (t) => parts.find(p => p.type === t).value;
+  return `${get('hour')}:${get('minute')}:${get('second')}`;
+}
+
 function generateSeedFromDate(dateString) {
   const hash = crypto.createHash('sha256').update(dateString).digest();
   return Math.abs(hash.readInt32BE(0));
 }
 
-// ── Helper: Get today's date in UTC as YYYY-MM-DD ──
-function getTodayDate() {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(now.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-// ── Helper: Validate date is today ──
-function isToday(dateString) {
-  return dateString === getTodayDate();
-}
-
-// ── Helper: Validate name (1-20 chars, alphanumeric + spaces) ──
 function isValidName(name) {
   if (!name || typeof name !== 'string') return false;
-  if (name.length < 1 || name.length > 20) return false;
-  return /^[a-zA-Z0-9 ]+$/.test(name);
+  if (name.length < 1 || name.length > 7) return false;
+  return /^[a-zA-Z0-9]+$/.test(name);
 }
 
-// ── Helper: Auto-cleanup entries older than 7 days ──
-function cleanupOldEntries() {
-  const now = new Date();
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-  for (const [dateStr, entries] of leaderboards.entries()) {
-    // Parse date and check if older than 7 days
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const entryDate = new Date(Date.UTC(year, month - 1, day));
-
-    if (entryDate < sevenDaysAgo) {
-      leaderboards.delete(dateStr);
-    }
+// Trim store to most recent 30 days so it doesn't grow forever.
+function pruneOld() {
+  const keys = [...firstSolvers.keys()].sort();
+  const keep = 30;
+  if (keys.length > keep) {
+    for (const k of keys.slice(0, keys.length - keep)) firstSolvers.delete(k);
   }
 }
 
-// ── API: GET /api/daily-seed ──
+// ── API: GET /api/daily-seed (EST-aligned) ──
 app.get('/api/daily-seed', (req, res) => {
-  const today = getTodayDate();
+  const today = getEstDateString();
   const seed = generateSeedFromDate(today);
   res.json({ date: today, seed });
 });
 
-// ── API: GET /api/leaderboard/:date ──
-app.get('/api/leaderboard/:date', (req, res) => {
-  const { date } = req.params;
-
-  // Validate date format (basic check: YYYY-MM-DD)
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD.' });
-  }
-
-  const entries = leaderboards.get(date) || [];
-
-  // Return top 10, sorted by time ascending
-  const topEntries = entries
-    .sort((a, b) => a.time - b.time)
-    .slice(0, 10)
-    .map((entry, index) => ({
-      rank: index + 1,
-      name: entry.name,
-      time: entry.time,
-      guesses: entry.guesses,
-      timestamp: entry.timestamp
-    }));
-
-  res.json({ date, entries: topEntries });
+// ── API: GET /api/first-solvers (last 10 days, newest first) ──
+app.get('/api/first-solvers', (req, res) => {
+  pruneOld();
+  const sorted = [...firstSolvers.keys()].sort().reverse().slice(0, 10);
+  const entries = sorted.map(date => {
+    const e = firstSolvers.get(date);
+    return {
+      date,
+      name: e.name,
+      time: e.time,
+      guesses: e.guesses,
+      solvedAt: e.solvedAt,
+      solvedAtEst: getEstTimeString(new Date(e.solvedAt))
+    };
+  });
+  res.json({ entries });
 });
 
-// ── API: POST /api/leaderboard ──
-app.post('/api/leaderboard', (req, res) => {
-  const { date, name, time, guesses } = req.body;
-  const today = getTodayDate();
+// ── API: GET /api/first-solver/today ──
+app.get('/api/first-solver/today', (req, res) => {
+  const today = getEstDateString();
+  const e = firstSolvers.get(today);
+  if (!e) return res.json({ date: today, claimed: false });
+  res.json({
+    date: today,
+    claimed: true,
+    entry: {
+      name: e.name,
+      time: e.time,
+      guesses: e.guesses,
+      solvedAt: e.solvedAt,
+      solvedAtEst: getEstTimeString(new Date(e.solvedAt))
+    }
+  });
+});
 
-  // Validate date is today
-  if (!date || date !== today) {
-    return res.status(400).json({
-      success: false,
-      message: `Date must be today (${today})`
-    });
+// ── API: POST /api/first-solver/claim ──
+//  Body: { time: number, guesses: number }
+//  Atomically claims today's first-solver slot and returns a token used to
+//  later set the player's name. If already claimed, returns 409 with the
+//  current entry.
+app.post('/api/first-solver/claim', (req, res) => {
+  const { time, guesses } = req.body || {};
+  const today = getEstDateString();
+
+  if (typeof time !== 'number' || time <= 0 || time > 86400) {
+    return res.status(400).json({ success: false, message: 'Invalid time' });
   }
-
-  // Validate name
-  if (!isValidName(name)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Name must be 1-20 alphanumeric characters (spaces allowed)'
-    });
-  }
-
-  // Validate time
-  if (typeof time !== 'number' || time <= 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Time must be a positive number (seconds)'
-    });
-  }
-
-  // Validate guesses
   if (!Number.isInteger(guesses) || guesses < 1 || guesses > 10) {
-    return res.status(400).json({
+    return res.status(400).json({ success: false, message: 'Invalid guesses' });
+  }
+
+  if (firstSolvers.has(today)) {
+    const e = firstSolvers.get(today);
+    return res.status(409).json({
       success: false,
-      message: 'Guesses must be an integer between 1 and 10'
+      message: 'Already claimed for today',
+      entry: {
+        name: e.name,
+        time: e.time,
+        guesses: e.guesses,
+        solvedAt: e.solvedAt,
+        solvedAtEst: getEstTimeString(new Date(e.solvedAt))
+      }
     });
   }
 
-  // Auto-cleanup old entries
-  cleanupOldEntries();
-
-  // Get or create leaderboard for today
-  if (!leaderboards.has(today)) {
-    leaderboards.set(today, []);
-  }
-
-  const entries = leaderboards.get(today);
-
-  // Check if entry qualifies for top 10
-  const isBetter = entries.length < 10 || entries.some(e => time < e.time);
-
-  if (!isBetter) {
-    return res.status(400).json({
-      success: false,
-      message: 'Time does not qualify for leaderboard'
-    });
-  }
-
-  // Add new entry
-  const newEntry = {
-    name,
+  const claimToken = crypto.randomBytes(16).toString('hex');
+  const entry = {
+    name: null,
     time,
     guesses,
-    timestamp: new Date().toISOString()
+    solvedAt: new Date().toISOString(),
+    claimToken
   };
-  entries.push(newEntry);
-
-  // Sort by time and keep only top 10
-  entries.sort((a, b) => a.time - b.time);
-  const topEntries = entries.slice(0, 10);
-  leaderboards.set(today, topEntries);
-
-  // Find rank of new entry
-  const rank = topEntries.findIndex(e => e.timestamp === newEntry.timestamp) + 1;
-
-  // Return success with rank and current leaderboard
-  const responseEntries = topEntries.map((entry, index) => ({
-    rank: index + 1,
-    name: entry.name,
-    time: entry.time,
-    guesses: entry.guesses,
-    timestamp: entry.timestamp
-  }));
+  firstSolvers.set(today, entry);
+  pruneOld();
+  saveToDisk();
 
   res.json({
     success: true,
-    rank,
-    entries: responseEntries
+    date: today,
+    claimToken,
+    solvedAtEst: getEstTimeString(new Date(entry.solvedAt))
+  });
+});
+
+// ── API: POST /api/first-solver/name ──
+//  Body: { name: string, claimToken: string }
+//  Sets the display name for today's claimed slot. Only the holder of the
+//  matching claimToken can set or update the name.
+app.post('/api/first-solver/name', (req, res) => {
+  const { name, claimToken } = req.body || {};
+  const today = getEstDateString();
+
+  if (!isValidName(name)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Name must be 1-7 alphanumeric characters'
+    });
+  }
+  if (!claimToken || typeof claimToken !== 'string') {
+    return res.status(400).json({ success: false, message: 'Missing claim token' });
+  }
+
+  const e = firstSolvers.get(today);
+  if (!e) {
+    return res.status(404).json({ success: false, message: 'No claim for today yet' });
+  }
+  if (e.claimToken !== claimToken) {
+    return res.status(403).json({ success: false, message: 'Invalid claim token' });
+  }
+
+  e.name = name.toUpperCase();
+  firstSolvers.set(today, e);
+  saveToDisk();
+
+  res.json({
+    success: true,
+    date: today,
+    entry: {
+      name: e.name,
+      time: e.time,
+      guesses: e.guesses,
+      solvedAt: e.solvedAt,
+      solvedAtEst: getEstTimeString(new Date(e.solvedAt))
+    }
   });
 });
 
 // ── Static files with aggressive caching for assets ──
 app.use(express.static(path.join(__dirname, 'public'), {
-  maxAge: '7d',                // Cache static assets for 7 days
-  etag: true,                  // Enable ETag for conditional requests
-  lastModified: true,          // Enable Last-Modified header
+  maxAge: '7d',
+  etag: true,
+  lastModified: true,
   setHeaders: (res, filePath) => {
-    // HTML should not be cached long-term (so updates deploy instantly)
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
     }
-    // Images, fonts, etc. can be cached aggressively
     if (filePath.match(/\.(png|jpg|jpeg|svg|ico|woff2?|ttf)$/)) {
-      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable'); // 30 days
+      res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
     }
   }
 }));
 
-// ── SPA fallback: serve index.html for any unmatched route ──
+// ── SPA fallback ──
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
