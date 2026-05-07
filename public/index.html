@@ -1180,6 +1180,10 @@
         .leaderboard-table .lb-time {
             color: rgba(255,255,255,0.85);
         }
+        .leaderboard-table .lb-moves {
+            color: rgba(255,255,255,0.85);
+            font-weight: 700;
+        }
         .leaderboard-table .lb-solve {
             color: rgba(255,255,255,0.6);
             font-size: 0.74rem;
@@ -2416,11 +2420,15 @@
                 ? `<span class="lb-solve">${escapeHtml(e.solvedAtEst)} EST</span>`
                 : '';
             const elapsed = formatTime(e.time || 0);
+            const moves = e.guesses
+                ? `${e.guesses}/${MAX_TURNS}`
+                : '—';
             return `
                 <tr class="${isToday ? 'lb-today' : ''}">
                     <td>${escapeHtml(dateLabel)}</td>
                     <td>${name}</td>
                     <td class="lb-time">${escapeHtml(elapsed)}</td>
+                    <td class="lb-moves">${escapeHtml(moves)}</td>
                     <td>${solveTime}</td>
                 </tr>`;
         }).join('');
@@ -2432,6 +2440,7 @@
                         <th>Date</th>
                         <th>Name</th>
                         <th>Time</th>
+                        <th>Moves</th>
                         <th>Finished</th>
                     </tr>
                 </thead>
