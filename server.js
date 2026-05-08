@@ -241,6 +241,11 @@ app.post('/api/first-solver/name', (req, res) => {
   });
 });
 
+// ── Clean URL for /privacy → privacy.html (matches Vercel's cleanUrls) ──
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+
 // ── Static files with aggressive caching for assets ──
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '7d',
