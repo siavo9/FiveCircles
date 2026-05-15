@@ -1118,161 +1118,6 @@
             font-weight: 700;
         }
 
-        /* ─── First-Solver Leaderboard ─── */
-        .leaderboard {
-            margin: 18px auto 0;
-            max-width: 520px;
-            padding: 16px 18px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 14px;
-            color: white;
-        }
-        .leaderboard-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .leaderboard-title {
-            font-size: 0.95rem;
-            font-weight: 800;
-            letter-spacing: 0.3px;
-        }
-        .leaderboard-subtitle {
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.65);
-            font-weight: 600;
-        }
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.82rem;
-        }
-        .leaderboard-table th {
-            text-align: left;
-            font-weight: 700;
-            color: rgba(255,255,255,0.6);
-            padding: 6px 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-        .leaderboard-table td {
-            padding: 7px 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            font-variant-numeric: tabular-nums;
-        }
-        .leaderboard-table tr:last-child td { border-bottom: none; }
-        .leaderboard-table .lb-name {
-            font-weight: 700;
-            color: #FFD60A;
-        }
-        .leaderboard-table .lb-name.empty {
-            color: rgba(255,255,255,0.35);
-            font-weight: 500;
-            font-style: italic;
-        }
-        .leaderboard-table .lb-today {
-            background: rgba(255,214,10,0.07);
-        }
-        .leaderboard-table .lb-time {
-            color: rgba(255,255,255,0.85);
-        }
-        .leaderboard-table .lb-moves {
-            color: rgba(255,255,255,0.85);
-            font-weight: 700;
-        }
-        .leaderboard-table .lb-solve {
-            color: rgba(255,255,255,0.6);
-            font-size: 0.74rem;
-        }
-        .leaderboard-empty {
-            text-align: center;
-            padding: 18px 8px;
-            color: rgba(255,255,255,0.55);
-            font-size: 0.82rem;
-        }
-
-        /* ─── First-Solver Name Modal ─── */
-        .name-modal-card {
-            background: white;
-            border-radius: 22px;
-            padding: 28px 24px 24px;
-            max-width: 360px;
-            width: calc(100% - 32px);
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-            animation: popIn 0.35s cubic-bezier(.34,1.56,.64,1);
-        }
-        .name-modal-emoji {
-            font-size: 3rem;
-            margin-bottom: 6px;
-        }
-        .name-modal-title {
-            font-size: 1.35rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #FFD60A, #FF9F0A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 6px;
-        }
-        .name-modal-msg {
-            font-size: 0.9rem;
-            color: #555;
-            margin-bottom: 18px;
-            line-height: 1.4;
-        }
-        .name-modal-input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 12px 14px;
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            text-align: center;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            outline: none;
-            transition: border-color 0.18s;
-        }
-        .name-modal-input:focus { border-color: #667eea; }
-        .name-modal-hint {
-            font-size: 0.72rem;
-            color: #999;
-            margin-top: 6px;
-            text-align: center;
-        }
-        .name-modal-error {
-            font-size: 0.78rem;
-            color: #FF3B30;
-            margin-top: 8px;
-            min-height: 1em;
-            font-weight: 600;
-        }
-        .name-modal-btn {
-            margin-top: 14px;
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #FFD60A, #FF9F0A);
-            color: white;
-            font-size: 1rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: transform 0.12s, box-shadow 0.18s;
-        }
-        .name-modal-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(255,159,10,0.35); }
-        .name-modal-btn:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
     </style>
 </head>
 <body>
@@ -1356,21 +1201,9 @@
 </div>
 </main>
 
-<!-- ── Daily First-Solver Leaderboard (last 10 days, EST) ── -->
-<section class="leaderboard" aria-label="Daily first-solver leaderboard">
-    <div class="leaderboard-header">
-        <div class="leaderboard-title">🏆 Daily First Solvers</div>
-        <div class="leaderboard-subtitle">Last 10 days · EST</div>
-    </div>
-    <div id="leaderboardBody">
-        <div class="leaderboard-empty">Loading…</div>
-    </div>
-</section>
-
 <!-- Footer -->
 <footer class="footer">
     Created by Ovi 🎨<br>
-    Enjoying the game? <a href="https://buy.stripe.com/bJe6oI4SK4IRd8y9r27N600" target="_blank" rel="noopener">Drop a tip in the jar 🫙☕</a> so I can keep making fun things!<br>
     <a href="/privacy">Privacy</a>
 </footer>
 
@@ -1501,28 +1334,6 @@
         </div>
 
         <button class="btn-play-again" onclick="newGame()">Play Again 🎮</button>
-    </div>
-</div>
-
-<!-- ── First-Solver Name Entry Modal ── -->
-<div class="modal-overlay" id="nameModalOverlay">
-    <div class="name-modal-card">
-        <div class="name-modal-emoji">🥇</div>
-        <div class="name-modal-title">First to Solve Today!</div>
-        <div class="name-modal-msg">
-            You cracked today's puzzle before anyone else. Enter a name (max 7 characters) for the leaderboard.
-        </div>
-        <input type="text"
-               id="nameModalInput"
-               class="name-modal-input"
-               maxlength="7"
-               autocomplete="off"
-               autocorrect="off"
-               spellcheck="false"
-               placeholder="YOURNAME">
-        <div class="name-modal-hint">Letters &amp; numbers only · max 7 characters</div>
-        <div class="name-modal-error" id="nameModalError"></div>
-        <button id="nameModalSubmit" class="name-modal-btn" onclick="submitFirstSolverName()">Add me to the leaderboard</button>
     </div>
 </div>
 
@@ -1696,13 +1507,6 @@
         const parts = fmt.formatToParts(d);
         const get = (t) => parts.find(p => p.type === t).value;
         return `${get('year')}-${get('month')}-${get('day')}`;
-    }
-
-    function formatLeaderboardDate(dateStr) {
-        // dateStr is YYYY-MM-DD in EST. Render as "Mon, May 7"
-        const [y, m, d] = dateStr.split('-').map(Number);
-        const dt = new Date(Date.UTC(y, m - 1, d, 12)); // noon UTC = same calendar day everywhere
-        return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     }
 
     // ─────────────────────────────────────────
@@ -2355,9 +2159,6 @@
             document.getElementById('shareBtn').style.display = won ? 'inline-block' : 'none';
             renderStats();
 
-            // Try to claim today's first-solver slot if the player won.
-            if (won) attemptFirstSolverClaim(elapsedTime, history.length);
-
             // Daily can only be played once per day — hide Play Again, show Play More (switches to Free Play)
             document.querySelector('.btn-play-again').style.display = 'none';
             showPlayMoreButton();
@@ -2401,157 +2202,6 @@
             showCopiedTooltip();
         }).catch(() => {
             alert('Failed to copy to clipboard');
-        });
-    }
-
-    // ─────────────────────────────────────────
-    //  First-Solver Leaderboard
-    // ─────────────────────────────────────────
-    let pendingClaimToken = null;
-
-    function renderLeaderboard(entries) {
-        const body = document.getElementById('leaderboardBody');
-        if (!entries || entries.length === 0) {
-            body.innerHTML = '<div class="leaderboard-empty">No daily winners yet — be the first!</div>';
-            return;
-        }
-
-        const todayStr = getEstDateString();
-        const rows = entries.map(e => {
-            const isToday = e.date === todayStr;
-            const dateLabel = isToday ? 'Today' : formatLeaderboardDate(e.date);
-            const name = e.name
-                ? `<span class="lb-name">${escapeHtml(e.name)}</span>`
-                : `<span class="lb-name empty">—</span>`;
-            const solveTime = e.solvedAtEst
-                ? `<span class="lb-solve">${escapeHtml(e.solvedAtEst)} EST</span>`
-                : '';
-            const elapsed = formatTime(e.time || 0);
-            const moves = e.guesses
-                ? `${e.guesses}/${MAX_TURNS}`
-                : '—';
-            return `
-                <tr class="${isToday ? 'lb-today' : ''}">
-                    <td>${escapeHtml(dateLabel)}</td>
-                    <td>${name}</td>
-                    <td class="lb-time">${escapeHtml(elapsed)}</td>
-                    <td class="lb-moves">${escapeHtml(moves)}</td>
-                    <td>${solveTime}</td>
-                </tr>`;
-        }).join('');
-
-        body.innerHTML = `
-            <table class="leaderboard-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Name</th>
-                        <th>Time</th>
-                        <th>Moves</th>
-                        <th>Finished</th>
-                    </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>`;
-    }
-
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, ch => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[ch]));
-    }
-
-    function fetchLeaderboard() {
-        fetch('/api/first-solvers')
-            .then(r => r.ok ? r.json() : { entries: [] })
-            .then(data => renderLeaderboard(data.entries || []))
-            .catch(() => {
-                document.getElementById('leaderboardBody').innerHTML =
-                    '<div class="leaderboard-empty">Leaderboard unavailable.</div>';
-            });
-    }
-
-    function attemptFirstSolverClaim(timeSeconds, guesses) {
-        const today = getEstDateString();
-        // Don't try to claim twice from the same browser/day.
-        if (localStorage.getItem(`fc_first_claimed_${today}`)) return;
-
-        fetch('/api/first-solver/claim', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ time: timeSeconds, guesses })
-        })
-        .then(async r => {
-            const data = await r.json().catch(() => ({}));
-            if (r.ok && data.success && data.claimToken) {
-                pendingClaimToken = data.claimToken;
-                localStorage.setItem(`fc_first_claimed_${today}`, '1');
-                openNameModal();
-            }
-            // 409 (someone else was first) or any other error: silently
-            // refresh the leaderboard so the player sees who beat them.
-            fetchLeaderboard();
-        })
-        .catch(() => { /* network hiccup — ignore */ });
-    }
-
-    function openNameModal() {
-        const overlay = document.getElementById('nameModalOverlay');
-        const input = document.getElementById('nameModalInput');
-        const error = document.getElementById('nameModalError');
-        const submit = document.getElementById('nameModalSubmit');
-        input.value = '';
-        error.textContent = '';
-        submit.disabled = false;
-        submit.textContent = 'Add me to the leaderboard';
-        overlay.classList.add('visible');
-        setTimeout(() => input.focus(), 150);
-    }
-
-    function closeNameModal() {
-        document.getElementById('nameModalOverlay').classList.remove('visible');
-    }
-
-    function submitFirstSolverName() {
-        const input = document.getElementById('nameModalInput');
-        const error = document.getElementById('nameModalError');
-        const submit = document.getElementById('nameModalSubmit');
-        const raw = (input.value || '').trim().toUpperCase();
-
-        if (!/^[A-Z0-9]{1,7}$/.test(raw)) {
-            error.textContent = 'Use 1–7 letters or numbers (no spaces or symbols).';
-            return;
-        }
-        if (!pendingClaimToken) {
-            error.textContent = 'Claim expired. Please refresh.';
-            return;
-        }
-
-        submit.disabled = true;
-        submit.textContent = 'Saving…';
-        error.textContent = '';
-
-        fetch('/api/first-solver/name', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: raw, claimToken: pendingClaimToken })
-        })
-        .then(async r => {
-            const data = await r.json().catch(() => ({}));
-            if (r.ok && data.success) {
-                pendingClaimToken = null;
-                closeNameModal();
-                fetchLeaderboard();
-            } else {
-                error.textContent = (data && data.message) || 'Could not save name.';
-                submit.disabled = false;
-                submit.textContent = 'Add me to the leaderboard';
-            }
-        })
-        .catch(() => {
-            error.textContent = 'Network error — try again.';
-            submit.disabled = false;
-            submit.textContent = 'Add me to the leaderboard';
         });
     }
 
@@ -2644,28 +2294,6 @@
 
     renderRulesColors();
     newGame();
-
-    // ── Leaderboard: initial fetch + periodic refresh while page is open ──
-    fetchLeaderboard();
-    setInterval(() => {
-        if (document.visibilityState === 'visible') fetchLeaderboard();
-    }, 60_000);
-
-    // ── Enter to submit name in first-solver modal ──
-    document.getElementById('nameModalInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            submitFirstSolverName();
-        }
-    });
-
-    // Allow Escape to dismiss the name modal (slot stays claimed, name blank).
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' &&
-            document.getElementById('nameModalOverlay').classList.contains('visible')) {
-            closeNameModal();
-        }
-    });
 </script>
 </body>
 </html>
