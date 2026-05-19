@@ -153,15 +153,101 @@
             .title { font-size: 1.7rem; }
             .privacy-container { padding: 24px 18px; }
         }
+
+        /* ── Persistent Top Nav (shared across all pages) ── */
+        .site-nav {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .site-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.95);
+            color: #667eea;
+            padding: 7px 14px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.15s, background 0.15s;
+        }
+
+        .site-nav a:hover {
+            transform: scale(1.04);
+            background: white;
+            color: #667eea;
+        }
+
+        /* ── How to Play (shared compact card) ── */
+        .how-to-play {
+            background: #f0f4ff;
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+        }
+
+        .how-to-play h2 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #667eea;
+            margin: 0 0 6px 0;
+        }
+
+        .how-to-play p {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .how-to-play ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .how-to-play li {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #444;
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
+    <!-- Persistent top nav (home + parent site) -->
+    <nav class="site-nav" aria-label="Site navigation">
+        <a href="/" aria-label="Four Circles home">🏠 Home</a>
+        <a href="https://zaksbraingames.com" aria-label="More games at Zaks Brain Games">🎮 More Brain Games</a>
+    </nav>
+
     <main class="privacy-container">
         <div class="header">
             <h1 class="title">Privacy Policy</h1>
             <div class="subtitle">Four Circles</div>
             <div class="effective-date">Effective: May 8, 2026</div>
         </div>
+
+        <section class="how-to-play" aria-label="How to play Four Circles">
+            <h2>📖 How to Play</h2>
+            <p>Four Circles is a colorful guessing game! A secret code of 4 colors is hidden. You have 10 tries to guess the code by picking colors and getting clues after each guess.</p>
+            <ul>
+                <li>🎯 <strong>Goal:</strong> Crack the secret 4-color code in 10 guesses or fewer.</li>
+                <li>🎨 <strong>Pick:</strong> Tap colors from the palette to build your guess.</li>
+                <li>✅ <strong>Green dot:</strong> right color, right spot.</li>
+                <li>🟡 <strong>Yellow dot:</strong> right color, wrong spot.</li>
+                <li>⚪ <strong>Gray dot:</strong> color is not in the code.</li>
+            </ul>
+        </section>
 
         <p class="intro">
             Short version: Four Circles is a free browser game. We don't make accounts, don't take your email, and don't sell anything. We use Google Analytics for anonymous traffic stats. That's it.

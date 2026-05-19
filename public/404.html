@@ -6,41 +6,144 @@
     <title>Page Not Found — Four Circles</title>
     <meta name="robots" content="noindex">
     <link rel="canonical" href="https://fourcircles.app/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            padding: 24px 16px;
             color: white;
-            text-align: center;
-            padding: 24px;
         }
-        .container { max-width: 480px; }
-        h1 { font-size: 4rem; margin-bottom: 8px; }
-        p { font-size: 1.2rem; margin-bottom: 24px; opacity: 0.9; }
-        a {
-            display: inline-block;
+
+        /* Persistent top nav (shared across all pages) */
+        .site-nav {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .site-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.95);
+            color: #667eea;
+            padding: 7px 14px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.15s, background 0.15s;
+        }
+        .site-nav a:hover {
+            transform: scale(1.04);
             background: white;
             color: #667eea;
-            padding: 14px 32px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 28px;
+            padding: 28px 24px;
+            width: 100%;
+            max-width: 500px;
+            color: #333;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            margin-bottom: 4px;
+            line-height: 1;
+        }
+
+        .lead {
+            font-size: 1.05rem;
+            color: #444;
+            margin-bottom: 18px;
+            font-weight: 600;
+        }
+
+        .play-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 28px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: transform 0.15s;
+            margin-bottom: 18px;
         }
-        a:hover { transform: scale(1.05); }
+        .play-btn:hover { transform: scale(1.05); }
+
+        /* How to Play (shared compact card) */
+        .how-to-play {
+            background: #f0f4ff;
+            border-radius: 16px;
+            padding: 14px 16px;
+            text-align: left;
+        }
+        .how-to-play h2 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #667eea;
+            margin: 0 0 6px 0;
+        }
+        .how-to-play p {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        .how-to-play ul { padding-left: 20px; margin: 0; }
+        .how-to-play li {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #444;
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Persistent top nav (home + parent site) -->
+    <nav class="site-nav" aria-label="Site navigation">
+        <a href="/" aria-label="Four Circles home">🏠 Home</a>
+        <a href="https://zaksbraingames.com" aria-label="More games at Zaks Brain Games">🎮 More Brain Games</a>
+    </nav>
+
+    <main class="container">
         <h1>🔍</h1>
-        <p>Oops! This page doesn't exist. But the puzzle is waiting for you!</p>
-        <a href="/">Play Four Circles →</a>
-    </div>
+        <p class="lead">Oops! This page doesn't exist. But the puzzle is waiting for you!</p>
+        <a class="play-btn" href="/">Play Four Circles →</a>
+
+        <section class="how-to-play" aria-label="How to play Four Circles">
+            <h2>📖 How to Play</h2>
+            <p>Four Circles is a colorful guessing game! A secret code of 4 colors is hidden. You have 10 tries to guess the code by picking colors and getting clues after each guess.</p>
+            <ul>
+                <li>🎯 <strong>Goal:</strong> Crack the secret 4-color code in 10 guesses or fewer.</li>
+                <li>🎨 <strong>Pick:</strong> Tap colors from the palette to build your guess.</li>
+                <li>✅ <strong>Green dot:</strong> right color, right spot.</li>
+                <li>🟡 <strong>Yellow dot:</strong> right color, wrong spot.</li>
+                <li>⚪ <strong>Gray dot:</strong> color is not in the code.</li>
+            </ul>
+        </section>
+    </main>
 </body>
 </html>
