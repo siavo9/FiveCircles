@@ -755,6 +755,39 @@
             text-underline-offset: 2px;
         }
 
+        /* ── Persistent Top Nav (shared across all pages) ── */
+        .site-nav {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .site-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.95);
+            color: #667eea;
+            padding: 7px 14px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.15s, background 0.15s;
+        }
+
+        .site-nav a:hover {
+            transform: scale(1.04);
+            background: white;
+        }
+
         /* ── Shared Modal Base ── */
         .modal-overlay {
             display: none;
@@ -1129,6 +1162,12 @@
         <p>Choose from 6 colors — Red, Blue, Yellow, Green, Orange, and Purple — and use logic to decode the hidden sequence. Play in Easy mode (no repeats) or Hard mode (repeats allowed). Free, instant, no download needed.</p>
     </div>
 </noscript>
+
+<!-- Persistent top nav (home + parent site) -->
+<nav class="site-nav" aria-label="Site navigation">
+    <a href="/" aria-label="Four Circles home">🏠 Home</a>
+    <a href="https://zaksbraingames.com" aria-label="More games at Zaks Brain Games">🎮 More Brain Games</a>
+</nav>
 
 <main>
 <div class="game-container" role="application" aria-label="Four Circles puzzle game">
